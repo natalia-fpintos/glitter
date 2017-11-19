@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "glitter",
-    "description": "No description",
-    "slug": "snack-ByauqV8JM",
+    "name": "Glitter",
+    "description": "Camera application - tested for iOS",
+    "slug": "glitter",
     "privacy": "unlisted",
     "sdkVersion": "22.0.0",
     "version": "1.0.0",

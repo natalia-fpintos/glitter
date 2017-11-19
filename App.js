@@ -1,9 +1,19 @@
 import React, { Component } from 'react';
-import { Text, View, Image, TouchableOpacity, CameraRoll } from 'react-native';
+import {
+  Text,
+  View,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  CameraRoll,
+  Animated,
+  Easing,
+  Dimensions
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; // 6.2.0
 import { styles } from './styles/styles';
-import { Camera, Permissions, Constants } from "expo";
-import SnapEmoji from 'react-native-snap-emoji';
+import { Camera, Permissions, Constants, Font } from 'expo';
+import EmojiPicker from 'react-native-snap-emoji';
 
 export default class App extends Component {
   state = {
@@ -11,7 +21,9 @@ export default class App extends Component {
     type: Camera.Constants.Type.back,
     photo: null,
     cameraRollURI: null,
+    fontLoaded: false,
     showEmojiPicker: false,
+    savedFadeInit: new Animated.Value(0)
   };
 
   async componentWillMount() {
@@ -19,21 +31,53 @@ export default class App extends Component {
     this.setState({ hasCameraPermission: status === 'granted' });
   }
 
+  async componentDidMount() {
+    await Font.loadAsync({
+      'DancingScript-Bold': require('./assets/fonts/DancingScript-Bold.ttf'),
+    });
+    this.setState({ fontLoaded: true });
+  }
+
   takePic = async () => {
     if (this.camera) {
       this.setState({
         photo: await this.camera.takePictureAsync(),
-        showEmojiPicker: false});
+        showEmojiPicker: false,
+      });
     }
   };
 
   savePic = async () => {
+    this.animateFade(1, 150);
     let savedPic = await CameraRoll.saveToCameraRoll(this.state.photo.uri, 'photo');
-    this.setState({ cameraRollUri: savedPic });
+    this.setState({
+      cameraRollUri: savedPic
+    });
+  };
+
+  animateFade = (toValue, duration, delay) => {
+    Animated.timing(
+      this.state.savedFadeInit,
+      {
+        toValue,
+        duration,
+        delay
+      }
+    ).start(
+      toValue === 1 ? this.final : null
+    );
+  };
+
+  final = () => {
+    this.animateFade(0, 300, 500);
   };
 
   closePic = () => {
-    this.setState({photo: null, cameraRollUri: null});
+    this.setState({
+      photo: null,
+      cameraRollUri: null,
+      showEmojiPicker: false
+    });
   };
 
   showEmojiPicker = () => {
@@ -42,8 +86,8 @@ export default class App extends Component {
 
   renderRevoked = () => {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>
+      <View>
+        <Text style={styles.header}>
           Oops!
         </Text>
         <Text style={styles.paragraph}>
@@ -58,29 +102,28 @@ export default class App extends Component {
 
   renderPic = (photo) => {
     return (
-      <View style={styles.camera}>
-        <Image
-          style={{width: '100%', height: '100%', position: 'absolute'}}
-          source={{uri: photo.uri}}/>
-        <View style={styles.emojiPicker}>
-          <SnapEmoji isVisible={this.state.showEmojiPicker}>
-          </SnapEmoji>
-        </View>
-        <View style={styles.cameraView}>
-          <View style={styles.buttons}>
-            <TouchableOpacity style={styles.touchable}
-              onPress={this.savePic.bind(this)}>
-              <Ionicons name="ios-download-outline" size={37} color="whitesmoke"/>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.touchable}
-              onPress={this.showEmojiPicker.bind(this)}>
-              <Ionicons name="ios-glasses-outline" size={44} color="whitesmoke"/>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.touchable}
-              onPress={this.closePic.bind(this)}>
-              <Ionicons name="ios-close-circle-outline" size={37} color="whitesmoke"/>
-            </TouchableOpacity>
-          </View>
+      <Image
+        style={styles.picture}
+        source={{uri: photo.uri}}/>
+    );
+  };
+
+  renderPicCameraView = () => {
+    return (
+      <View style={styles.cameraView}>
+        <View style={styles.buttons}>
+          <TouchableOpacity style={styles.touchable}
+            onPress={this.savePic.bind(this)}>
+            <Ionicons name="ios-download-outline" size={37} color="whitesmoke"/>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.touchable}
+            onPress={this.showEmojiPicker.bind(this)}>
+            <Ionicons name="ios-glasses-outline" size={44} color="whitesmoke"/>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.touchable}
+            onPress={this.closePic.bind(this)}>
+            <Ionicons name="ios-close-circle-outline" size={37} color="whitesmoke"/>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -88,53 +131,77 @@ export default class App extends Component {
 
   renderCamera = () => {
     return (
-      <View style={styles.camera}>
-        <Camera
-          style={styles.camera}
-          type={this.state.type}
-          ref={ref => { this.camera = ref; }}>
-          <View style={styles.emojiPicker}>
-            <SnapEmoji isVisible={this.state.showEmojiPicker}>
-            </SnapEmoji>
-          </View>
-          <View style={styles.cameraView}>
-            <View style={styles.buttons}>
-              <TouchableOpacity style={styles.touchable}
-                onPress={this.showEmojiPicker.bind(this)}>
-                <Ionicons name="ios-glasses-outline" size={44} color="whitesmoke"/>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.touchable}
-                onPress={this.takePic.bind(this)}>
-                <Ionicons name="ios-radio-button-on-outline" size={55} color="whitesmoke"/>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.touchable}
-                onPress={() => {
-                  this.setState({
-                    type: this.state.type === Camera.Constants.Type.back
-                      ? Camera.Constants.Type.front
-                      : Camera.Constants.Type.back
-                  });
-                }}>
-                <Ionicons name="ios-reverse-camera-outline" size={44} color="whitesmoke"/>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Camera>
+      <Camera
+        style={styles.camera}
+        type={this.state.type}
+        ref={ref => { this.camera = ref; }}>
+      </Camera>
+    );
+  };
+
+  renderCameraView = () => {
+    return (
+      <View style={styles.cameraView}>
+        <View style={styles.buttons}>
+          <TouchableOpacity style={styles.touchable}
+            onPress={this.showEmojiPicker.bind(this)}>
+            <Ionicons name="ios-glasses-outline" size={44} color="whitesmoke"/>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.touchable}
+            onPress={this.takePic.bind(this)}>
+            <Ionicons name="ios-radio-button-on-outline" size={55} color="whitesmoke"/>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.touchable}
+            onPress={() => {
+              this.setState({
+                type: this.state.type === Camera.Constants.Type.back
+                  ? Camera.Constants.Type.front
+                  : Camera.Constants.Type.back
+              });
+            }}>
+            <Ionicons name="ios-reverse-camera-outline" size={44} color="whitesmoke"/>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
 
   render() {
-    const { hasCameraPermission } = this.state;
-    const { photo } = this.state;
+    const { hasCameraPermission, photo, saved, savedFadeInit } = this.state;
+    let renderTop;
+    let renderBottom;
+    let savedText = <Animated.Text style={[styles.saved, {opacity: savedFadeInit}]}>Saved!</Animated.Text>
     if (hasCameraPermission === null) {
       return <View />;
     } else if (hasCameraPermission === false) {
-      return this.renderRevoked();
+      renderBottom = this.renderRevoked();
     } else if (photo !== null) {
-      return this.renderPic(photo);
+      renderTop = this.renderPic(photo);
+      renderBottom = this.renderPicCameraView();
     } else {
-      return this.renderCamera();
+      renderTop = this.renderCamera();
+      renderBottom = this.renderCameraView();
     }
+    return (
+      <View style={styles.container}>
+        {hasCameraPermission ? renderTop : null}
+        <View style={styles.navbar}>
+          {
+            this.state.fontLoaded ? (
+              <Text style={styles.title}>Glitter</Text>
+            ) : null
+          }
+        </View>
+        {
+          hasCameraPermission ? (
+            <View style={styles.emojiPicker}>
+              <EmojiPicker isVisible={this.state.showEmojiPicker}/>
+            </View>
+          ) : null
+        }
+        {savedText}
+        {renderBottom}
+      </View>
+    )
   }
 }

@@ -8,8 +8,21 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
     justifyContent: 'flex-start',
+    backgroundColor: 'whitesmoke'
+  },
+  navbar: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ADA8BEDD',
+    height: Constants.statusBarHeight + 50
+  },
+  title: {
     paddingTop: Constants.statusBarHeight,
-    backgroundColor: '#ECF0F1',
+    color: '#000000BB',
+    fontSize: 26,
+    fontFamily: 'DancingScript-Bold'
   },
   paragraph: {
     marginRight: 50,
@@ -19,27 +32,40 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
-    color: '#34495E',
+    color: '#000000BB'
   },
-  title: {
+  saved: {
+    paddingLeft: 10,
+    width: '100%',
+    fontSize: 15,
+    textAlign: 'left',
+    backgroundColor: 'transparent',
+    color: 'whitesmoke'
+  },
+  header: {
     marginRight: 50,
     marginLeft: 50,
     marginTop: 100,
-    marginBottom: 130,
+    marginBottom: 100,
     fontWeight: 'bold',
     fontSize: 30,
     textAlign: 'center',
-    color: '#34495E',
+    color: '#000000BB'
   },
   camera: {
-    flex: 1,
+    position: 'absolute',
     width: '100%',
+    height: '100%'
   },
   cameraView: {
-    flex: 1,
     width: '100%',
     backgroundColor: 'transparent',
-    flexDirection: 'row',
+    flexDirection: 'row'
+  },
+  picture: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%'
   },
   buttons: {
     flex: 1,
@@ -49,12 +75,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    alignSelf: 'flex-end',
+    alignSelf: 'flex-end'
   },
   emojiPicker: {
-    height: '100%',
-    paddingTop: Constants.statusBarHeight,
+    flex: 1,
+    width: '100%',
+    height: '100%'
   }
 });
 
-export { styles }
+export { styles };
